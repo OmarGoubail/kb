@@ -7,12 +7,15 @@
     "kb": "src/cli.ts"
   },
   "scripts": {
-    "dev": "bun run src/cli.ts",
+    "dev": "./scripts/dev.sh",
+    "dev:init": "./scripts/dev.sh init",
+    "dev:reset": "./scripts/dev.sh reset",
     "test": "bun test",
     "test:unit": "bun test tests/unit",
     "test:integration": "bun test tests/integration",
     "test:e2e": "bun test tests/e2e",
-    "build": "bun build --compile src/cli.ts --outfile kb",
+    "build": "./scripts/build.sh",
+    "build:install": "./scripts/build.sh install",
     "lint": "bunx biome check src/ tests/",
     "fmt": "bunx biome format --write src/ tests/",
     "check": "bun run fmt && bun run test && bun run lint"
