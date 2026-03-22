@@ -6,13 +6,18 @@ import { initCommand } from "../../src/commands/init.js";
 
 describe("kb init", () => {
 	let tempDir: string;
+	let globalConfigDir: string;
 
 	beforeEach(() => {
 		tempDir = mkdtempSync(join(tmpdir(), "kb-test-"));
+		globalConfigDir = mkdtempSync(join(tmpdir(), "kb-global-"));
+		process.env.KB_GLOBAL_CONFIG_DIR = globalConfigDir;
 	});
 
 	afterEach(() => {
+		process.env.KB_GLOBAL_CONFIG_DIR = undefined;
 		rmSync(tempDir, { recursive: true, force: true });
+		rmSync(globalConfigDir, { recursive: true, force: true });
 	});
 
 	it("creates .kb directory structure", () => {
@@ -45,10 +50,16 @@ describe("kb init", () => {
 		expect(existsSync(join(templatesDir, "MOC.md"))).toBe(true);
 	});
 
+	it("saves global config pointing to KB", () => {
+		initCommand(tempDir);
+
+		const globalConfig = JSON.parse(readFileSync(join(globalConfigDir, "config.json"), "utf-8"));
+		expect(globalConfig.default_kb).toBe(tempDir);
+	});
+
 	it("refuses to init if already initialized", () => {
 		initCommand(tempDir);
 
-		// Mock process.exit
 		let exitCode: number | undefined;
 		const originalExit = process.exit;
 		process.exit = ((code?: number) => {

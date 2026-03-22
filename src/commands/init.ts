@@ -1,7 +1,13 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { createDefaultConfig } from "../config/defaults.js";
-import { getConfigPath, getDbPath, getKBDir } from "../config/loader.js";
+import {
+	getConfigPath,
+	getDbPath,
+	getGlobalConfigPath,
+	getKBDir,
+	saveGlobalConfig,
+} from "../config/loader.js";
 import { openDatabase } from "../db/connection.js";
 import { initializeSchema } from "../db/migrations.js";
 
@@ -37,8 +43,11 @@ export function initCommand(targetPath?: string): void {
 	initializeSchema(db);
 	db.close();
 
+	// Register as default KB in global config
+	saveGlobalConfig({ default_kb: kbRoot });
+
 	console.log(`Initialized knowledge base at ${kbRoot}`);
 	console.log(`  Config: ${configPath}`);
 	console.log(`  Database: ${dbPath}`);
-	console.log(`  Templates: ${templatesDir}`);
+	console.log(`  Global: ${getGlobalConfigPath()}`);
 }

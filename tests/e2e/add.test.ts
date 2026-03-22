@@ -7,18 +7,19 @@ import { initCommand } from "../../src/commands/init.js";
 
 describe("kb add", () => {
 	let tempDir: string;
-	const originalCwd = process.cwd;
+	let globalConfigDir: string;
 
 	beforeEach(() => {
 		tempDir = mkdtempSync(join(tmpdir(), "kb-test-"));
+		globalConfigDir = mkdtempSync(join(tmpdir(), "kb-global-"));
+		process.env.KB_GLOBAL_CONFIG_DIR = globalConfigDir;
 		initCommand(tempDir);
-		// Override cwd so loadConfig finds the KB
-		process.cwd = () => tempDir;
 	});
 
 	afterEach(() => {
-		process.cwd = originalCwd;
+		process.env.KB_GLOBAL_CONFIG_DIR = undefined;
 		rmSync(tempDir, { recursive: true, force: true });
+		rmSync(globalConfigDir, { recursive: true, force: true });
 	});
 
 	it("creates a project note", () => {
