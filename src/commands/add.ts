@@ -3,6 +3,7 @@ import { loadConfig } from "../config/loader.js";
 import type { NoteData, NoteType } from "../config/types.js";
 import { atomicWriteSync } from "../fs/atomic-write.js";
 import { fileExists, listMarkdownFiles } from "../fs/reader.js";
+import { gitCommit } from "../git/operations.js";
 import { generateFilename, getCurrentDate } from "../naming/generator.js";
 import { renderTemplate } from "../template/renderer.js";
 
@@ -106,5 +107,6 @@ export function addCommand(type: string, title: string, options: AddOptions): vo
 	}
 
 	atomicWriteSync(filePath, content);
+	gitCommit(root, filename, `kb: add ${type} "${title}"`);
 	console.log(`Created: ${filename}`);
 }

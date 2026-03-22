@@ -10,6 +10,7 @@ import {
 } from "../config/loader.js";
 import { openDatabase } from "../db/connection.js";
 import { initializeSchema } from "../db/migrations.js";
+import { gitInit } from "../git/operations.js";
 
 export function initCommand(targetPath?: string): void {
 	const kbRoot = resolve(targetPath ?? process.cwd());
@@ -43,11 +44,15 @@ export function initCommand(targetPath?: string): void {
 	initializeSchema(db);
 	db.close();
 
+	// Initialize git repo
+	const gitInitialized = gitInit(kbRoot);
+
 	// Register as default KB in global config
 	saveGlobalConfig({ default_kb: kbRoot });
 
 	console.log(`Initialized knowledge base at ${kbRoot}`);
 	console.log(`  Config: ${configPath}`);
 	console.log(`  Database: ${dbPath}`);
+	console.log(`  Git: ${gitInitialized ? "initialized" : "skipped"}`);
 	console.log(`  Global: ${getGlobalConfigPath()}`);
 }

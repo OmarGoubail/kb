@@ -2,6 +2,7 @@
 import { Command } from "commander";
 import { addCommand } from "./commands/add.js";
 import { initCommand } from "./commands/init.js";
+import { validateCommand } from "./commands/validate.js";
 
 const program = new Command();
 
@@ -41,6 +42,14 @@ program
 			content: options.content,
 			dryRun: options.dryRun,
 		});
+	});
+
+program
+	.command("validate")
+	.description("Validate file naming and frontmatter")
+	.option("--fix", "Auto-fix issues where possible")
+	.action((options) => {
+		validateCommand({ fix: options.fix });
 	});
 
 program.parse();
