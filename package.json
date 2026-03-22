@@ -1,0 +1,32 @@
+{
+  "name": "kb",
+  "version": "0.1.0",
+  "type": "module",
+  "module": "src/cli.ts",
+  "bin": {
+    "kb": "src/cli.ts"
+  },
+  "scripts": {
+    "dev": "bun run src/cli.ts",
+    "test": "bun test",
+    "test:unit": "bun test tests/unit",
+    "test:integration": "bun test tests/integration",
+    "test:e2e": "bun test tests/e2e",
+    "build": "bun build --compile src/cli.ts --outfile kb",
+    "lint": "bunx biome check src/ tests/",
+    "fmt": "bunx biome format --write src/ tests/",
+    "check": "bun run fmt && bun run test && bun run lint"
+  },
+  "dependencies": {
+    "commander": "^13.1.0",
+    "yaml": "^2.7.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.0",
+    "@types/bun": "^1.2.0"
+  },
+  "trustedDependencies": [
+    "@biomejs/biome"
+  ]
+}
