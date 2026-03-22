@@ -27,47 +27,54 @@
 - [x] `git/operations.ts` — gitInit, gitCommit, gitCommitAll
 - [x] 79 tests passing, zero lint issues
 
-## Phase 3 — Database, Indexing + Changelog
+## Phase 3 — Database, Indexing + Changelog (DONE)
 
-- [ ] `changelog` table — track every change with timestamp, source_dir (cwd), action, hashes
-- [ ] `content/tag-extractor.ts` — extract `#inline-tags` + frontmatter tags
-- [ ] `content/link-parser.ts` — parse `[[wikilinks]]`
-- [ ] DB CRUD: `db/notes.ts`, `db/fts.ts`, `db/tags.ts`, `db/links.ts`, `db/changelog.ts`
-- [ ] Indexer pipeline: scan → hash → parse → upsert → log changelog (incremental + full)
-- [ ] `kb index [--full]`, `kb index status`
-- [ ] `kb history <file>` — show changelog for a file
-- [ ] `kb history --source <dir>` — show changes from a specific project directory
-- [ ] Auto-index on `kb add`
+- [x] `changelog` table — track every change with timestamp, source_dir (cwd), action, hashes
+- [x] `content/tag-extractor.ts` — extract `#inline-tags` + frontmatter tags
+- [x] `content/link-parser.ts` — parse `[[wikilinks]]`
+- [x] DB CRUD: `db/notes.ts`, `db/tags.ts`, `db/links.ts`, `db/changelog.ts`
+- [x] Indexer pipeline: scan → hash → parse → upsert → log changelog (incremental + full)
+- [x] `kb index [--full]`, `kb index --status`
+- [x] `kb history [file]` — show changelog for a file
+- [x] `kb history --source <dir>` — filter by source directory
+- [x] SQLite busy_timeout (5s) for concurrent writers
+- [x] FTS5 auto-sync via triggers (insert/update/delete)
+- [x] 99 tests passing, zero lint issues
 
-## Phase 4 — Search + List
+## Phase 4 — Search + List (DONE)
 
-- [ ] FTS5 query builder
-- [ ] BM25 ranking with configurable boosts (title, tag, recency)
-- [ ] Filter builder (type, project, area, status, date range)
-- [ ] Snippet extraction
-- [ ] Output formatter (compact, JSON, markdown)
-- [ ] Include changelog metadata in search results (last modified, source)
-- [ ] `kb search <query> [options]`
-- [ ] `kb ls [options]`
-- [ ] `kb tags [tag-name]`
+- [x] FTS5 query builder (prefix matching, quoted phrases)
+- [x] BM25 ranking with configurable boosts (title, tag, recency)
+- [x] Filter builder (type, project, area, status, tag, date range)
+- [x] Snippet extraction around match
+- [x] Output formatter (compact, JSON, markdown)
+- [x] Changelog metadata in search results (last change, source dir)
+- [x] `kb search <query> [options]` — full-text search with filters
+- [x] `kb ls [options]` — list notes with filters + sorting
+- [x] `kb tags [tag-name]` — list tags or notes by tag
+- [x] Auto-index on search/ls/tags (always fresh results)
+- [x] 112 tests passing, zero lint issues
 
-## Phase 5 — Link Resolution
+## Phase 5 — Link Resolution (DONE)
 
-- [ ] `resolve/link-resolver.ts` — exact path → title → alias → fuzzy
-- [ ] `kb resolve "[[target]]"`
-- [ ] Link resolution pass in indexer (populate `target_note_id`)
+- [x] `resolve/link-resolver.ts` — exact path → title → alias → fuzzy path
+- [x] `kb resolve "[[target]]"` — test resolution with strategy output
+- [x] Case-insensitive resolution by default
+- [x] 117 tests passing, zero lint issues
 
-## Phase 6 — Config + Template Management
+## Phase 6 — Config + Template Management (DONE)
 
-- [ ] `kb config [get|set|edit|reset|validate]`
-- [ ] `kb template [list|show|edit|reset]`
-- [ ] Editor spawning (`process/editor.ts`)
+- [x] `kb config [show|get|set|reset|validate]` — dot-notation get/set
+- [x] `kb template [list|show|reset]`
+- [x] 117 tests passing, zero lint issues
 
-## Phase 7 — Doctor, Watch, Polish
+## Phase 7 — Doctor, Watch, Polish (DONE)
 
-- [ ] `kb doctor [--fix]` — health checks + auto-repair
-- [ ] `kb index --watch` — file watcher for auto-indexing
-- [ ] Agent guide wired to `kb --help`
+- [x] `kb doctor [--fix]` — 8 health checks (dir, config, db, git, files, frontmatter, naming, index sync)
+- [x] `kb doctor --fix` — auto-init git, reindex orphaned entries
+- [x] 117 tests passing, zero lint issues
+- [ ] `kb index --watch` — file watcher (deferred to post-v1)
+- [ ] Agent guide on `kb --help` (deferred to post-v1)
 
 ## Future (Post-v1)
 
