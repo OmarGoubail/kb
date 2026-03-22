@@ -84,6 +84,20 @@ export function initializeSchema(db: Database): void {
 			)
 		`);
 
+		db.run(`
+			CREATE TABLE IF NOT EXISTS changelog (
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				note_path TEXT NOT NULL,
+				action TEXT NOT NULL,
+				timestamp TEXT NOT NULL,
+				source_dir TEXT,
+				agent TEXT,
+				summary TEXT,
+				content_hash TEXT,
+				prev_hash TEXT
+			)
+		`);
+
 		// Indexes
 		db.run("CREATE INDEX IF NOT EXISTS idx_notes_path ON notes(path)");
 		db.run("CREATE INDEX IF NOT EXISTS idx_notes_type ON notes(type)");
@@ -93,6 +107,9 @@ export function initializeSchema(db: Database): void {
 		db.run("CREATE INDEX IF NOT EXISTS idx_links_source ON links(source_note_id)");
 		db.run("CREATE INDEX IF NOT EXISTS idx_links_target ON links(target_note_id)");
 		db.run("CREATE INDEX IF NOT EXISTS idx_aliases_alias ON aliases(alias)");
+		db.run("CREATE INDEX IF NOT EXISTS idx_changelog_path ON changelog(note_path)");
+		db.run("CREATE INDEX IF NOT EXISTS idx_changelog_timestamp ON changelog(timestamp)");
+		db.run("CREATE INDEX IF NOT EXISTS idx_changelog_source ON changelog(source_dir)");
 
 		db.run("COMMIT");
 	} catch (err) {
