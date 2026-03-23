@@ -99,6 +99,30 @@
 - [x] `kb prime` — warns if project has no project note
 - [x] `kb prime` — falls back to global view when no project detected
 
+## Next Up — Dependencies + Agent Integration
+
+### Dependencies (DONE)
+- [x] **`depends_on` / `blocks` frontmatter fields** — first-class dependency tracking on any note type
+- [x] **`kb ready`** — show tasks where all `depends_on` items have status `done`
+- [x] **`kb blocked`** — show blocked tasks with what's blocking them
+- [x] **Cross-type deps** — tasks can depend on decisions, sessions, anything
+- [x] **Fuzzy dep resolution** — `depends_on: [task-PAY-1-setup]` resolves to `task-PAY-1-setup.md`
+- [x] **`deps` table** with indexes, synced during indexing
+- [x] **Prime updated** — shows ready/blocked instead of flat task list
+- [x] **JSON output** — `kb ready --output json` for agent consumption
+- [x] 147 tests, zero lint issues
+
+### Agent Integration
+- [ ] **Agent hooks** — Claude Code `user-prompt-submit-hook` and OpenCode equivalent that runs `kb prime` on session start, injecting KB context into the agent automatically
+- [ ] **`kb prime` shows dependency context** — "PAY-2 is blocked by: decision-use-stripe (active)" so the agent knows what to resolve first
+
+### Polish
+- [ ] **`kb edit <id|path>`** — open note in `$EDITOR`
+- [ ] **Project-repo mapping** — `repos` field in project frontmatter for explicit repo→project matching
+- [ ] **`kb status`** — one-liner summary for prompt/statusline integration
+- [ ] **Auto-set project on project notes** — `kb add project "X"` should auto-set `--project X`
+- [ ] **Semantic compaction** — `kb archive` summarizes old closed notes to keep working set lean
+
 ## Future (Post-v1)
 
 - [ ] `kb upgrade` / `kb doctor --fix` migrations for existing KBs (add git, new tables, config fields)

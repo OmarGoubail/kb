@@ -2,6 +2,7 @@
 import { Command } from "commander";
 import { addCommand } from "./commands/add.js";
 import { appendCommand } from "./commands/append.js";
+import { blockedCommand } from "./commands/blocked.js";
 import { configCommand } from "./commands/config-cmd.js";
 import { doctorCommand } from "./commands/doctor.js";
 import { historyCommand } from "./commands/history.js";
@@ -9,6 +10,7 @@ import { indexCommand } from "./commands/index.js";
 import { initCommand } from "./commands/init.js";
 import { lsCommand } from "./commands/ls.js";
 import { primeCommand } from "./commands/prime.js";
+import { readyCommand } from "./commands/ready.js";
 import { resolveCommand } from "./commands/resolve.js";
 import { searchCommand } from "./commands/search.js";
 import { showCommand } from "./commands/show.js";
@@ -233,6 +235,24 @@ program
 			process.exit(1);
 		}
 		appendCommand(identifier, { content: options.content });
+	});
+
+program
+	.command("ready")
+	.description("Show tasks ready to work on (all dependencies met)")
+	.option("--project <name>", "Filter by project")
+	.option("--output <format>", "Output format (compact|json)", "compact")
+	.action((options) => {
+		readyCommand({ project: options.project, output: options.output });
+	});
+
+program
+	.command("blocked")
+	.description("Show blocked tasks and what's blocking them")
+	.option("--project <name>", "Filter by project")
+	.option("--output <format>", "Output format (compact|json)", "compact")
+	.action((options) => {
+		blockedCommand({ project: options.project, output: options.output });
 	});
 
 program.parse();

@@ -3,6 +3,7 @@ import type { KBConfig } from "../config/types.js";
 import { parseLinks } from "../content/link-parser.js";
 import { extractTags } from "../content/tag-extractor.js";
 import { logChange } from "../db/changelog.js";
+import { syncDeps } from "../db/deps.js";
 import { syncLinks } from "../db/links.js";
 import { deleteNote, getAllNotes, getNoteByPath, upsertNote } from "../db/notes.js";
 import { syncTags } from "../db/tags.js";
@@ -79,6 +80,11 @@ export function indexFiles(
 			const links = parseLinks(fmResult.body, config.indexing.parser.wikilink_pattern);
 			syncLinks(db, noteId, links);
 
+			// Extract and sync dependencies from frontmatter
+			const dependsOn = toStringArray(fm.depends_on);
+			const blocks = toStringArray(fm.blocks);
+			syncDeps(db, file.path, dependsOn, blocks);
+
 			// Log changelog
 			const action = existing ? "update" : "create";
 			logChange(db, {
@@ -139,4 +145,17 @@ function extractTitle(body: string, filename: string): string {
 	}
 	// Strip extension and type prefix
 	return filename.replace(/\.md$/, "").replace(/^[a-zA-Z]+-/, "");
+}
+
+/**
+ * Safely converts a frontmatter value to a string array.
+ */
+function toStringArray(value: unknown): string[] {
+	if (Array.isArray(value)) {
+		return value.filter((v) => typeof v === "string") as string[];
+	}
+	if (typeof value === "string" && value.length > 0) {
+		return [value];
+	}
+	return [];
 }

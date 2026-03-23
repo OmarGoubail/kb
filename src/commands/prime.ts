@@ -1,5 +1,6 @@
 import { getDbPath, loadConfig } from "../config/loader.js";
 import { openDatabase } from "../db/connection.js";
+import { getBlockedTasks, getReadyTasks } from "../db/deps.js";
 import { initializeSchema } from "../db/migrations.js";
 import { detectGitContext } from "../git/context.js";
 import { indexFiles } from "../indexer/pipeline.js";
@@ -129,6 +130,10 @@ export function primeCommand(options: PrimeOptions = {}): void {
 		}>;
 	}
 
+	// Dependency-aware task queries
+	const readyTasks = getReadyTasks(db, detectedProject ?? undefined);
+	const blockedTasks = getBlockedTasks(db, detectedProject ?? undefined);
+
 	db.close();
 
 	// Build output
@@ -152,7 +157,26 @@ export function primeCommand(options: PrimeOptions = {}): void {
 
 	// Project-specific context
 	if (detectedProject) {
-		if (activeTasks.length > 0) {
+		if (readyTasks.length > 0) {
+			lines.push("## Ready (no blockers)");
+			for (const t of readyTasks) {
+				lines.push(`- ${t.path}`);
+			}
+			lines.push("");
+		}
+
+		if (blockedTasks.length > 0) {
+			lines.push("## Blocked");
+			for (const t of blockedTasks) {
+				lines.push(`- ${t.path}`);
+				for (const b of t.blockers) {
+					lines.push(`  <- ${b.path} [${b.status ?? "not found"}]`);
+				}
+			}
+			lines.push("");
+		}
+
+		if (activeTasks.length > 0 && readyTasks.length === 0 && blockedTasks.length === 0) {
 			lines.push("## Tasks");
 			for (const t of activeTasks) {
 				lines.push(`- [${t.status}] ${t.path}`);
@@ -187,6 +211,8 @@ export function primeCommand(options: PrimeOptions = {}): void {
 
 		if (
 			activeTasks.length === 0 &&
+			readyTasks.length === 0 &&
+			blockedTasks.length === 0 &&
 			branchNotes.length === 0 &&
 			recentSessions.length === 0 &&
 			recentDecisions.length === 0
@@ -203,7 +229,28 @@ export function primeCommand(options: PrimeOptions = {}): void {
 		}
 		lines.push("");
 
-		if (globalActiveTasks.length > 0) {
+		if (readyTasks.length > 0) {
+			lines.push("## Ready (no blockers)");
+			for (const t of readyTasks) {
+				const proj = t.project ? ` [${t.project}]` : "";
+				lines.push(`- ${t.path}${proj}`);
+			}
+			lines.push("");
+		}
+
+		if (blockedTasks.length > 0) {
+			lines.push("## Blocked");
+			for (const t of blockedTasks) {
+				const proj = t.project ? ` [${t.project}]` : "";
+				lines.push(`- ${t.path}${proj}`);
+				for (const b of t.blockers) {
+					lines.push(`  <- ${b.path} [${b.status ?? "not found"}]`);
+				}
+			}
+			lines.push("");
+		}
+
+		if (globalActiveTasks.length > 0 && readyTasks.length === 0 && blockedTasks.length === 0) {
 			lines.push("## Active Tasks");
 			for (const t of globalActiveTasks) {
 				const proj = t.project ? ` [${t.project}]` : "";
@@ -248,6 +295,8 @@ export function primeCommand(options: PrimeOptions = {}): void {
 	lines.push("kb tags [tag]                      # browse by tag");
 	lines.push("kb history [file]                  # change log");
 	lines.push("kb today                           # daily rollup");
+	lines.push("kb ready [--project X]             # tasks with no blockers");
+	lines.push("kb blocked [--project X]           # blocked tasks + what's blocking");
 	lines.push("```");
 	lines.push("");
 

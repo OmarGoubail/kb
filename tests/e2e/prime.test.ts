@@ -69,7 +69,7 @@ describe("kb prime", () => {
 		expect(output).toContain("wikilinks");
 	});
 
-	it("shows active tasks in global view", () => {
+	it("shows ready tasks in global view", () => {
 		addCommand("task", "Fix Bug", { project: "acme", area: "auth", id: "ACM-1", source: "linear" });
 
 		const logs: string[] = [];
@@ -81,7 +81,8 @@ describe("kb prime", () => {
 		console.log = origLog;
 		const output = logs.join("\n");
 
-		expect(output).toContain("Active Tasks");
+		// Task with no deps shows under "Ready"
+		expect(output).toContain("Ready");
 		expect(output).toContain("task-ACM-1-fix-bug.md");
 	});
 

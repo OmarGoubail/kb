@@ -100,6 +100,16 @@ export function initializeSchema(db: Database): void {
 			)
 		`);
 
+		db.run(`
+			CREATE TABLE IF NOT EXISTS deps (
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				source_path TEXT NOT NULL,
+				target_path TEXT NOT NULL,
+				rel_type TEXT NOT NULL,
+				UNIQUE(source_path, target_path, rel_type)
+			)
+		`);
+
 		// Migrate: add columns if they don't exist (safe for existing DBs)
 		try {
 			db.run("ALTER TABLE changelog ADD COLUMN source_repo TEXT");
@@ -125,6 +135,8 @@ export function initializeSchema(db: Database): void {
 		db.run("CREATE INDEX IF NOT EXISTS idx_changelog_timestamp ON changelog(timestamp)");
 		db.run("CREATE INDEX IF NOT EXISTS idx_changelog_source ON changelog(source_dir)");
 		db.run("CREATE INDEX IF NOT EXISTS idx_changelog_repo ON changelog(source_repo)");
+		db.run("CREATE INDEX IF NOT EXISTS idx_deps_source ON deps(source_path)");
+		db.run("CREATE INDEX IF NOT EXISTS idx_deps_target ON deps(target_path)");
 		db.run("CREATE INDEX IF NOT EXISTS idx_changelog_branch ON changelog(source_branch)");
 
 		db.run("COMMIT");
