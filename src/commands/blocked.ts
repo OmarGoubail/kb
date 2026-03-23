@@ -34,14 +34,14 @@ export function blockedCommand(options: BlockedOptions): void {
 	}
 
 	if (blocked.length === 0) {
-		console.log("No blocked tasks.");
+		console.log("Nothing is blocked.");
 		return;
 	}
 
-	for (const task of blocked) {
-		const proj = task.project ? ` [${task.project}]` : "";
-		console.log(`${task.path}${proj}`);
-		for (const blocker of task.blockers) {
+	for (const item of blocked) {
+		const meta = [item.type, item.project].filter(Boolean).join(" / ");
+		console.log(`${item.path}  (${meta})`);
+		for (const blocker of item.blockers) {
 			const status = blocker.status ?? "not found";
 			console.log(`  <- ${blocker.path} [${status}]`);
 		}

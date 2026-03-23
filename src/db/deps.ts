@@ -114,11 +114,16 @@ export function getReadyTasks(
 			   )
 			 ORDER BY n.type, n.modified_at DESC`,
 		)
-		.all(...params) as Array<{ path: string; title: string; type: string | null; project: string | null }>;
+		.all(...params) as Array<{
+		path: string;
+		title: string;
+		type: string | null;
+		project: string | null;
+	}>;
 }
 
 /**
- * Get all blocked tasks — active tasks where at least one depends_on is not done.
+ * Get all blocked notes — active notes (any type) where at least one depends_on is not done.
  */
 export function getBlockedTasks(
 	db: Database,
@@ -126,6 +131,7 @@ export function getBlockedTasks(
 ): Array<{
 	path: string;
 	title: string;
+	type: string | null;
 	project: string | null;
 	blockers: Array<{ path: string; status: string | null }>;
 }> {
@@ -134,17 +140,21 @@ export function getBlockedTasks(
 
 	const tasks = db
 		.prepare(
-			`SELECT DISTINCT n.path, n.title, n.project
+			`SELECT DISTINCT n.path, n.title, n.type, n.project
 			 FROM notes n
 			 JOIN deps d ON d.source_path = n.path AND d.rel_type = 'depends_on'
 			 LEFT JOIN notes dep ON d.target_path = dep.path
-			 WHERE n.type = 'task'
-			   AND n.status IN ('active', 'blocked')
+			 WHERE n.status IN ('active', 'blocked')
 			   ${projectFilter}
 			   AND (dep.status IS NULL OR dep.status != 'done')
-			 ORDER BY n.modified_at DESC`,
+			 ORDER BY n.type, n.modified_at DESC`,
 		)
-		.all(...params) as Array<{ path: string; title: string; project: string | null }>;
+		.all(...params) as Array<{
+		path: string;
+		title: string;
+		type: string | null;
+		project: string | null;
+	}>;
 
 	return tasks.map((task) => {
 		const blockers = db
