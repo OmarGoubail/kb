@@ -22,7 +22,7 @@ import { validateCommand } from "./commands/validate.js";
 
 const program = new Command();
 
-program.name("kb").description("Knowledge base CLI for managing markdown notes").version("0.1.0");
+program.name("kb").description("Knowledge base CLI for managing markdown notes").version("1.0.0");
 
 program
 	.command("init")

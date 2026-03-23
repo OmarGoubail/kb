@@ -1,6 +1,6 @@
 # kb
 
-A CLI tool for managing a markdown-based knowledge base. Flat files, SQLite full-text search, git history, Obsidian-compatible. Works from any directory.
+A CLI tool for managing a markdown-based knowledge base. Flat files, SQLite full-text search, git history, dependency tracking, Obsidian-compatible. Works from any directory. Designed for AI agent workflows.
 
 ## Install
 
@@ -13,28 +13,29 @@ bun run build:install   # compiles binary to ~/.local/bin/kb
 Verify:
 
 ```bash
-kb --version
+kb --version   # 1.0.0
 ```
 
 ## Quick Start
 
 ```bash
-# Initialize a knowledge base (creates .kb/ config, templates, SQLite DB, git repo)
+# Initialize a knowledge base
 kb init ~/my-kb
 
-# That's it. All commands now work from anywhere.
-kb add project "Acme Backend"
+# All commands now work from anywhere.
+kb add project "Acme Backend" --content "Go + PostgreSQL payments service."
 kb add task "Fix Login Flow" --project acme --area auth --id ACM-42 --source linear
-kb add session "Morning Standup" --project acme --area api
+kb add session "Morning Standup" --project acme --area api --content "Discussed auth timeline."
 kb search "authentication"
-kb ls --type task --status active
+kb ready                    # what can be worked on now
+kb today                    # daily rollup
 ```
 
 ## How It Works
 
-`kb init <path>` sets up a knowledge base directory and registers it in `~/.config/kb/config.json`. Every command after that knows where to read/write — no need to `cd` into the KB.
+`kb init <path>` sets up a knowledge base and registers it in `~/.config/kb/config.json`. Every command knows where to read/write — no `cd` needed.
 
-Notes are flat markdown files with YAML frontmatter. Every write is git-committed with the source directory tracked, so you always know what changed a file and from where.
+Notes are flat markdown files with YAML frontmatter. Every write is git-committed with the source directory, repo, and branch tracked — so you always know what changed, from where.
 
 ```
 ~/my-kb/
@@ -51,11 +52,11 @@ Notes are flat markdown files with YAML frontmatter. Every write is git-committe
 
 | Type | Purpose | Example |
 |------|---------|---------|
-| `session` | Work logs, daily notes | `session-2026-03-23-001-auth-refactor.md` |
-| `task` | Actionable items from Linear, GitHub, etc. | `task-ACM-42-fix-login-flow.md` |
+| `session` | Work logs, planning sessions | `session-2026-03-23-001-auth-refactor.md` |
+| `task` | Actionable items (Linear, GitHub, etc.) | `task-ACM-42-fix-login-flow.md` |
 | `project` | Project hub / overview | `project-acme-backend.md` |
-| `area` | Knowledge domain | `area-authentication.md` |
 | `decision` | Architecture decisions (ADRs) | `decision-2026-03-23-use-jwt.md` |
+| `area` | Knowledge domain | `area-authentication.md` |
 | `MOC` | Maps of Content (index pages) | `MOC-active-projects.md` |
 
 ## Commands
@@ -63,252 +64,202 @@ Notes are flat markdown files with YAML frontmatter. Every write is git-committe
 ### Creating Notes
 
 ```bash
-# Session log (auto-incrementing sequence per day)
 kb add session "Auth Refactor" --project acme --area auth
-# → session-2026-03-23-001-auth-refactor.md
+kb add task "Fix Login" --project acme --area auth --id ACM-42 --source linear --url "..."
+kb add project "Acme Backend" --content "..."
+kb add decision "Use JWT" --project acme --content "..."
+kb add area "Authentication" --content "..."
+kb add MOC "Active Projects" --content "..."
 
-# Task from Linear
-kb add task "Fix Login Flow" \
-  --project acme --area auth \
-  --id ACM-42 --source linear \
-  --url "https://linear.app/acme/issue/ACM-42"
-# → task-ACM-42-fix-login-flow.md
-
-# Project hub
-kb add project "Acme Backend"
-# → project-acme-backend.md
-
-# Decision record
-kb add decision "Use JWT Instead of Sessions"
-# → decision-2026-03-23-use-jwt-instead-of-sessions.md
-
-# Preview without writing
-kb add task "Maybe Later" --dry-run
-
-# Include body content
-kb add session "Research Notes" --project acme --area api \
-  --content "Found that the rate limiter uses a sliding window..."
+# All options: --project, --area, --status, --id, --name, --source, --url, --content, --stdin, --dry-run
 ```
 
-### Searching
+### Reading & Searching
 
 ```bash
-# Full-text search (BM25 ranking, auto-indexes before searching)
-kb search "authentication"
-
-# Filter results
-kb search "auth" --type task --project acme --status active
-kb search "deploy" --tag infrastructure --limit 5
-
-# Output as JSON (great for piping to other tools / agents)
-kb search "auth" --output json
-
-# Output as markdown
-kb search "deploy" --output markdown
-```
-
-### Listing & Browsing
-
-```bash
-# List all notes (most recently modified first)
-kb ls
-
-# Filter by type, project, status
+kb show ACM-42                  # read a note (fuzzy: id, path, title)
+kb search "authentication"      # full-text search (BM25)
+kb search "auth" --type task --project acme --output json
 kb ls --type task --status active
-kb ls --project acme --area auth
-
-# Sort options
-kb ls --sort title
-kb ls --sort created
-kb ls --recent          # alias for --sort modified DESC
-
-# List all tags with note counts
-kb tags
-
-# Show notes with a specific tag
-kb tags authentication
+kb ls --project acme --recent
+kb tags                         # list all tags
+kb tags auth                    # notes with this tag
 ```
 
-### Change History
-
-Every write is tracked with the caller's working directory, so you can see which project triggered each change.
+### Updating
 
 ```bash
-# Recent changes across all files
-kb history
-
-# History for a specific file
-kb history task-ACM-42-fix-login-flow.md
-
-# Changes from a specific project directory
-kb history --source ~/dev/acme-backend
+kb update ACM-42 --status done
+kb update ACM-42 --project acme --area api
+kb append ACM-42 --content "## Update\n\nFinished the endpoint."
 ```
 
-### Link Resolution
+### Dependencies
 
-Resolve `[[wikilinks]]` to actual files using configurable strategies (exact path, title, alias, fuzzy).
+Track what must be done before something else can start. Works across note types — tasks can depend on decisions, sessions, anything.
 
-```bash
-kb resolve "[[project-acme]]"
-# project-acme → project-acme-backend.md
-#   Strategy: fuzzy_path
-
-kb resolve "Acme Backend"
-# Acme Backend → project-acme-backend.md
-#   Strategy: title
+```yaml
+# In frontmatter:
+depends_on:
+  - task-ACM-1-setup-sdk.md
+  - decision-2026-03-23-use-jwt.md
 ```
 
-### Indexing
-
-Search and list auto-index before querying. You can also manage the index explicitly:
-
 ```bash
-kb index              # incremental (hash-based, skips unchanged)
-kb index --full       # full reindex
-kb index --status     # show stats
+kb ready                        # notes with all deps met
+kb ready --project acme         # scoped to project
+kb blocked                      # what's stuck and why
+kb blocked --output json
 ```
 
-### Validation
+### History & Tracking
+
+Every write is git-committed with source directory, repo name, and branch.
 
 ```bash
-# Check all files for frontmatter and naming issues
-kb validate
-
-# Auto-fix what's possible (fills in missing defaults)
-kb validate --fix
+kb history                              # recent changes
+kb history task-ACM-42-fix-login.md     # file history
+kb history --source ~/dev/acme          # changes from a directory
+kb today                                # daily rollup by project
 ```
 
-### Configuration
-
-All behavior is driven by `.kb/config.json`.
+### Configuration & Maintenance
 
 ```bash
-kb config                              # show full config
-kb config get naming.slug_max_length   # dot-notation access
+kb config                               # show full config
+kb config get naming.slug_max_length    # dot-notation access
 kb config set naming.slug_max_length 40
-kb config validate                     # check config syntax
-kb config reset                        # reset to defaults
+kb validate                             # check frontmatter + naming
+kb validate --fix                       # auto-fix defaults
+kb doctor                               # health checks
+kb doctor --fix                         # auto-repair
+kb template list                        # list templates
+kb prime                                # context dump for AI agents
 ```
 
-### Templates
+## AI Agent Integration
+
+### `kb prime`
+
+Run `kb prime` to get a full context block for any AI agent. It's project-aware — detects your repo and branch from the cwd, shows only recent and relevant context.
 
 ```bash
-kb template list           # show available templates
-kb template show session   # print template content
-kb template reset task     # reset to default
+$ kb prime
+You have access to a knowledge base via the `kb` CLI.
+KB: ~/my-kb
+repo: acme-backend
+branch: feature/auth-flow
+project: acme
+date: 2026-03-23 (showing last 2 days)
+
+## Ready (no blockers)
+- task-ACM-43-refresh-tokens.md
+
+## Blocked
+- task-ACM-44-token-rotation.md
+  <- task-ACM-43-refresh-tokens.md [active]
+
+## Recent Sessions
+- session-2026-03-23-001-auth-planning.md
+
+## Recent Decisions
+- decision-2026-03-23-use-jwt.md
+...
 ```
 
-### Diagnostics
+### Agent Workflow
 
-```bash
-kb doctor        # run health checks
-kb doctor --fix  # auto-fix (init git, reindex, clean orphans)
-```
+1. `kb prime` — get context (auto-detects project from git remote, even in worktrees)
+2. `kb ready` — see what's actionable
+3. `kb search "..." --output json` — find relevant notes
+4. `kb show <id>` — read full content
+5. `kb add session "..." --project X --content "..."` — log work
+6. `kb update <id> --status done` — mark complete
+7. Use `[[wikilinks]]` and `#tags` in content to connect notes
+
+### Tags
+
+Keep tags meaningful:
+- **By project**: `#acme`, `#payments-api`
+- **By feature/topic**: `#auth`, `#search`, `#onboarding`
+- **By milestone**: `#v1-release`, `#sprint-3`
+
+Avoid tech stack tags (`#typescript`), buzzwords (`#architecture`), or generic terms.
 
 ## Example Workflows
 
 ### Daily Development
 
 ```bash
-# Morning: start a session log
-kb add session "Sprint Work" --project acme --area auth
+# Morning: what needs doing?
+kb ready --project acme
 
-# Search for prior decisions before implementing
-kb search "jwt authentication" --type decision
+# Start a session
+kb add session "Auth Work" --project acme --area auth
+
+# Search for prior decisions
+kb search "jwt" --type decision
 
 # Create a task from a ticket
 kb add task "Add Refresh Tokens" \
   --project acme --area auth \
   --id ACM-55 --source linear
 
-# End of day: see what you worked on
-kb ls --type session --recent
-kb history
-```
+# Add dependency
+# (edit task-ACM-55 frontmatter: depends_on: [task-ACM-42-fix-login.md])
 
-### AI Agent Usage
-
-Agents discover the KB via `kb --help` and operate through CLI commands:
-
-```bash
-# Agent reads context before starting work
-kb search "rate limiting" --output json --limit 3
-
-# Agent logs its research findings
-kb add session "Rate Limiter Research" \
-  --project acme --area api \
-  --content "Found sliding window implementation in pkg/ratelimit.
-Configured at 100 req/min per user. Redis-backed.
-
-See [[task-ACM-42-fix-login-flow]] for related auth work.
-
-#rate-limiting #redis #api"
-
-# Agent checks what changed recently from a project directory
-kb history --source ~/dev/acme-backend
-
-# Agent resolves a wikilink to find the right file
-kb resolve "[[project-acme-backend]]"
+# End of day
+kb today
 ```
 
 ### Multi-Project Coordination
 
-When multiple agents work across projects, the changelog tracks everything:
-
 ```bash
-# From ~/dev/frontend — agent adds a task
+# From ~/dev/frontend — agent creates a task
 kb add task "Coordinate Auth with API" \
   --project frontend --area auth \
   --id FE-88 --source personal
 
-# From ~/dev/backend — different agent updates the same KB
+# From ~/dev/backend — different agent logs a session
 kb add session "Auth Integration Planning" \
   --project backend --area auth
 
-# Later: see all changes, with source directories
+# See all activity with source tracking
 kb history
-# just now  create  session-2026-03-23-002-auth-integration-planning.md from ~/dev/backend
-# 5m ago    create  task-FE-88-coordinate-auth-with-api.md from ~/dev/frontend
-
-# Filter to see what the backend project touched
-kb history --source ~/dev/backend
+# just now  create  session-... from ~/dev/backend (backend/main)
+# 5m ago    create  task-FE-88-... from ~/dev/frontend (frontend/feature/auth)
 ```
 
 ### Obsidian Integration
 
-The KB is just a folder of markdown files — open it in Obsidian and everything works:
+The KB is just a folder of markdown files:
 
 1. Open your KB folder in Obsidian
-2. Edit files freely — use `[[wikilinks]]`, add `#tags`
+2. Edit files freely — `[[wikilinks]]`, `#tags`
 3. Run `kb index` after editing (or let commands auto-index)
 4. Use Obsidian's graph view to visualize connections
 
 ## Development
 
 ```bash
-# Run tests
-bun test                # all 117 tests
-bun test tests/unit     # unit tests
-bun test tests/e2e      # e2e tests
-
-# Lint & format
-bun run lint
-bun run fmt
+bun test                # 147 tests
+bun run lint            # biome check
+bun run fmt             # biome format
 bun run check           # fmt + test + lint
 
-# Local dev testing (isolated .tmp/ dir, never touches real KB)
-bun run dev:reset                              # create test KB
-bun run dev -- add task "Test" --project x     # add to test KB
-bun run dev -- search "test"                   # search test KB
-bun run dev -- ls-files                        # list test files
+# Local dev (isolated .tmp/, never touches real KB)
+bun run dev:reset
+bun run dev -- add task "Test" --project x
+bun run dev -- search "test"
+bun run dev -- ready
 
 # Build
-bun run build           # compile binary to ./kb
+bun run build           # compile to ./kb
 bun run build:install   # compile + install to ~/.local/bin/kb
 ```
 
 ## Docs
 
 - [Architecture](docs/architecture.md) — module design, data flow, stack
-- [Configuration](docs/configuration.md) — all config sections explained
-- [Backlog](docs/backlog.md) — phase tracking, planned work
+- [Configuration](docs/configuration.md) — config sections explained
+- [Backlog](docs/backlog.md) — planned work
