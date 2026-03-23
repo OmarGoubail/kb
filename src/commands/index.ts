@@ -42,7 +42,10 @@ export function indexCommand(options: IndexOptions): void {
 	// Commit any untracked/modified files (catches manual edits, Obsidian changes, etc.)
 	const hasChanges = stats.added > 0 || stats.updated > 0 || stats.deleted > 0;
 	if (hasChanges) {
-		gitCommitAll(root, `kb: index (${stats.added} added, ${stats.updated} updated, ${stats.deleted} deleted)`);
+		gitCommitAll(
+			root,
+			`kb: index (${stats.added} added, ${stats.updated} updated, ${stats.deleted} deleted)`,
+		);
 	}
 
 	console.log(

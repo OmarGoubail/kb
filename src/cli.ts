@@ -187,8 +187,9 @@ program
 program
 	.command("prime")
 	.description("Output context for AI agents")
-	.action(() => {
-		primeCommand();
+	.option("--days <n>", "How many days of history to show", "2")
+	.action((options) => {
+		primeCommand({ days: Number.parseInt(options.days, 10) });
 	});
 
 program

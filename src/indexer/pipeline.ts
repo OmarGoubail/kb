@@ -7,6 +7,7 @@ import { syncLinks } from "../db/links.js";
 import { deleteNote, getAllNotes, getNoteByPath, upsertNote } from "../db/notes.js";
 import { syncTags } from "../db/tags.js";
 import { parseFrontmatter } from "../frontmatter/parser.js";
+import { detectGitContext } from "../git/context.js";
 import type { ScannedFile } from "./scanner.js";
 
 export interface IndexStats {
@@ -29,6 +30,7 @@ export function indexFiles(
 ): IndexStats {
 	const stats: IndexStats = { added: 0, updated: 0, deleted: 0, unchanged: 0, errors: 0 };
 	const sourceDir = process.cwd();
+	const gitCtx = detectGitContext(sourceDir);
 	const now = new Date().toISOString();
 
 	const scannedPaths = new Set(files.map((f) => f.path));
@@ -84,6 +86,8 @@ export function indexFiles(
 				action,
 				timestamp: now,
 				source_dir: sourceDir,
+				source_repo: gitCtx.repo,
+				source_branch: gitCtx.branch,
 				agent: process.env.KB_AGENT ?? null,
 				summary: existing ? "content changed" : "file created",
 				content_hash: file.contentHash,
@@ -109,6 +113,8 @@ export function indexFiles(
 				action: "delete",
 				timestamp: now,
 				source_dir: sourceDir,
+				source_repo: gitCtx.repo,
+				source_branch: gitCtx.branch,
 				agent: process.env.KB_AGENT ?? null,
 				summary: "file deleted",
 				content_hash: null,

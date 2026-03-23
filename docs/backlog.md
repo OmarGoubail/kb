@@ -87,6 +87,18 @@
 - [x] `resolve/note-resolver.ts` — shared resolution by path, .md ext, id pattern, fuzzy, title
 - [x] 117 tests passing, zero lint issues
 
+## Git Context + Smart Prime (DONE)
+
+- [x] `git/context.ts` — detect repo name (from git remote) and branch from any cwd, works with worktrees
+- [x] Changelog now stores `source_repo` and `source_branch` on every entry
+- [x] DB migration adds columns safely to existing DBs
+- [x] `kb index` commits untracked/modified files (catches Obsidian/manual edits)
+- [x] `kb prime` — project detection via git remote URL (not just dir name)
+- [x] `kb prime` — time-bounded recency (default 2 days, `--days` flag)
+- [x] `kb prime` — branch-aware: shows notes from current branch
+- [x] `kb prime` — warns if project has no project note
+- [x] `kb prime` — falls back to global view when no project detected
+
 ## Future (Post-v1)
 
 - [ ] `kb upgrade` / `kb doctor --fix` migrations for existing KBs (add git, new tables, config fields)

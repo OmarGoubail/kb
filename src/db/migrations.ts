@@ -91,12 +91,26 @@ export function initializeSchema(db: Database): void {
 				action TEXT NOT NULL,
 				timestamp TEXT NOT NULL,
 				source_dir TEXT,
+				source_repo TEXT,
+				source_branch TEXT,
 				agent TEXT,
 				summary TEXT,
 				content_hash TEXT,
 				prev_hash TEXT
 			)
 		`);
+
+		// Migrate: add columns if they don't exist (safe for existing DBs)
+		try {
+			db.run("ALTER TABLE changelog ADD COLUMN source_repo TEXT");
+		} catch {
+			/* column already exists */
+		}
+		try {
+			db.run("ALTER TABLE changelog ADD COLUMN source_branch TEXT");
+		} catch {
+			/* column already exists */
+		}
 
 		// Indexes
 		db.run("CREATE INDEX IF NOT EXISTS idx_notes_path ON notes(path)");
@@ -110,6 +124,8 @@ export function initializeSchema(db: Database): void {
 		db.run("CREATE INDEX IF NOT EXISTS idx_changelog_path ON changelog(note_path)");
 		db.run("CREATE INDEX IF NOT EXISTS idx_changelog_timestamp ON changelog(timestamp)");
 		db.run("CREATE INDEX IF NOT EXISTS idx_changelog_source ON changelog(source_dir)");
+		db.run("CREATE INDEX IF NOT EXISTS idx_changelog_repo ON changelog(source_repo)");
+		db.run("CREATE INDEX IF NOT EXISTS idx_changelog_branch ON changelog(source_branch)");
 
 		db.run("COMMIT");
 	} catch (err) {
