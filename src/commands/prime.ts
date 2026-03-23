@@ -139,9 +139,11 @@ export function primeCommand(options: PrimeOptions = {}): void {
 	// Build output
 	const lines: string[] = [];
 
-	lines.push("You have access to a knowledge base via the `kb` CLI.");
+	lines.push("kb — Personal Knowledge Base CLI v1.0.0");
+	lines.push("This is a local, markdown-based knowledge base. Not Linear, not GitHub Issues.");
+	lines.push("Use `kb` commands to read/write notes, track decisions, and manage dependencies.");
+	lines.push("");
 	lines.push(`KB: ${root}`);
-	lines.push(`cwd: ${cwd}`);
 	if (gitCtx.repo) lines.push(`repo: ${gitCtx.repo}`);
 	if (gitCtx.branch) lines.push(`branch: ${gitCtx.branch}`);
 	if (detectedProject) lines.push(`project: ${detectedProject}`);

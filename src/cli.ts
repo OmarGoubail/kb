@@ -22,7 +22,23 @@ import { validateCommand } from "./commands/validate.js";
 
 const program = new Command();
 
-program.name("kb").description("Knowledge base CLI for managing markdown notes").version("1.0.0");
+program
+	.name("kb")
+	.description("Knowledge base CLI for managing markdown notes")
+	.version("1.0.0")
+	.action(() => {
+		// No subcommand — show a useful banner
+		const { loadConfig } = require("./config/loader.js") as typeof import("./config/loader.js");
+		const result = loadConfig();
+		if (result.success) {
+			console.log("kb — Personal Knowledge Base CLI v1.0.0");
+			console.log(`KB: ${result.root}`);
+			console.log("Run `kb prime` for full context, `kb --help` for commands.");
+		} else {
+			console.log("kb — Personal Knowledge Base CLI v1.0.0");
+			console.log("No KB initialized. Run `kb init <path>` to get started.");
+		}
+	});
 
 program
 	.command("init")
