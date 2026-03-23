@@ -1,16 +1,21 @@
 #!/usr/bin/env bun
 import { Command } from "commander";
 import { addCommand } from "./commands/add.js";
+import { appendCommand } from "./commands/append.js";
 import { configCommand } from "./commands/config-cmd.js";
 import { doctorCommand } from "./commands/doctor.js";
 import { historyCommand } from "./commands/history.js";
 import { indexCommand } from "./commands/index.js";
 import { initCommand } from "./commands/init.js";
 import { lsCommand } from "./commands/ls.js";
+import { primeCommand } from "./commands/prime.js";
 import { resolveCommand } from "./commands/resolve.js";
 import { searchCommand } from "./commands/search.js";
+import { showCommand } from "./commands/show.js";
 import { tagsCommand } from "./commands/tags.js";
 import { templateCommand } from "./commands/template.js";
+import { todayCommand } from "./commands/today.js";
+import { updateCommand } from "./commands/update.js";
 import { validateCommand } from "./commands/validate.js";
 
 const program = new Command();
@@ -38,6 +43,7 @@ program
 	.option("--source <source>", "Source system (linear|github|notion|personal)")
 	.option("--url <url>", "External URL")
 	.option("--content <text>", "Body content")
+	.option("--stdin", "Read content from stdin")
 	.option("--dry-run", "Preview without writing")
 	.action((type: string, title: string, options) => {
 		addCommand(type, title, {
@@ -49,6 +55,7 @@ program
 			source: options.source,
 			url: options.url,
 			content: options.content,
+			stdin: options.stdin,
 			dryRun: options.dryRun,
 		});
 	});
@@ -175,6 +182,56 @@ program
 	.option("--fix", "Auto-fix issues where possible")
 	.action((options) => {
 		doctorCommand({ fix: options.fix });
+	});
+
+program
+	.command("prime")
+	.description("Output context for AI agents")
+	.action(() => {
+		primeCommand();
+	});
+
+program
+	.command("today")
+	.description("Show today's activity across all projects")
+	.action(() => {
+		todayCommand();
+	});
+
+program
+	.command("show")
+	.description("Show a note's full content")
+	.argument("<identifier>", "File path, note ID, or search term")
+	.action((identifier: string) => {
+		showCommand(identifier);
+	});
+
+program
+	.command("update")
+	.description("Update a note's frontmatter fields")
+	.argument("<identifier>", "File path, note ID, or search term")
+	.option("--status <status>", "Set status")
+	.option("--project <name>", "Set project")
+	.option("--area <name>", "Set area")
+	.action((identifier: string, options) => {
+		updateCommand(identifier, {
+			status: options.status,
+			project: options.project,
+			area: options.area,
+		});
+	});
+
+program
+	.command("append")
+	.description("Append content to an existing note")
+	.argument("<identifier>", "File path, note ID, or search term")
+	.option("--content <text>", "Content to append")
+	.action((identifier: string, options) => {
+		if (!options.content) {
+			console.error("--content is required.");
+			process.exit(1);
+		}
+		appendCommand(identifier, { content: options.content });
 	});
 
 program.parse();

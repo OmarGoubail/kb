@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { loadConfig } from "../config/loader.js";
 import type { NoteData, NoteType } from "../config/types.js";
@@ -16,6 +17,7 @@ interface AddOptions {
 	source?: string;
 	url?: string;
 	content?: string;
+	stdin?: boolean;
 	dryRun?: boolean;
 }
 
@@ -87,9 +89,15 @@ export function addCommand(type: string, title: string, options: AddOptions): vo
 	// Render content
 	let content = renderTemplate(templateConfig.content, templateVars);
 
+	// Read from stdin if requested
+	let userContent = options.content;
+	if (options.stdin) {
+		userContent = readStdin();
+	}
+
 	// Append user content if provided
-	if (options.content) {
-		content = `${content.trimEnd()}\n\n${options.content}\n`;
+	if (userContent) {
+		content = `${content.trimEnd()}\n\n${userContent}\n`;
 	}
 
 	const filePath = join(root, filename);
@@ -109,4 +117,12 @@ export function addCommand(type: string, title: string, options: AddOptions): vo
 	atomicWriteSync(filePath, content);
 	gitCommit(root, filename, `kb: add ${type} "${title}"`);
 	console.log(`Created: ${filename}`);
+}
+
+function readStdin(): string {
+	try {
+		return readFileSync("/dev/stdin", "utf-8");
+	} catch {
+		return "";
+	}
 }

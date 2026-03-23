@@ -76,13 +76,16 @@
 - [ ] `kb index --watch` — file watcher (deferred to post-v1)
 - [ ] Agent guide on `kb --help` (deferred to post-v1)
 
-## Next Up — Core Workflow Gaps
+## Core Workflow Gaps (DONE)
 
-- [ ] `kb show <file|id>` — read a note's full content (resolve by path, id, or fuzzy match)
-- [ ] `kb update <file|id> [--status X] [--project X]` — update frontmatter fields
-- [ ] `kb append <file|id> --content "..."` — append content to an existing note
-- [ ] `kb today` — daily rollup: all sessions, tasks changed, decisions made today, grouped by project
-- [ ] `kb prime` — outputs a context block for AI agents: note types, commands, current projects, recent activity, workflow conventions. Designed to be pasted into or piped to an agent prompt so it knows how to use the KB without being told
+- [x] `kb show <file|id>` — resolve by path, id, fuzzy match, or title
+- [x] `kb update <file|id> [--status X] [--project X] [--area X]` — update frontmatter fields
+- [x] `kb append <file|id> --content "..."` — append content to existing note
+- [x] `kb today` — daily rollup grouped by project (sessions, tasks, decisions, activity summary)
+- [x] `kb prime` — dynamic context block for AI agents (commands, state, active tasks, recent changes, workflow)
+- [x] `kb add --stdin` — read content from stdin for large documents
+- [x] `resolve/note-resolver.ts` — shared resolution by path, .md ext, id pattern, fuzzy, title
+- [x] 117 tests passing, zero lint issues
 
 ## Future (Post-v1)
 
