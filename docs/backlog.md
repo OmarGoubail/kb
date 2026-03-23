@@ -76,12 +76,23 @@
 - [ ] `kb index --watch` — file watcher (deferred to post-v1)
 - [ ] Agent guide on `kb --help` (deferred to post-v1)
 
+## Next Up — Core Workflow Gaps
+
+- [ ] `kb show <file|id>` — read a note's full content (resolve by path, id, or fuzzy match)
+- [ ] `kb update <file|id> [--status X] [--project X]` — update frontmatter fields
+- [ ] `kb append <file|id> --content "..."` — append content to an existing note
+- [ ] `kb today` — daily rollup: all sessions, tasks changed, decisions made today, grouped by project
+- [ ] `kb prime` — outputs a context block for AI agents: note types, commands, current projects, recent activity, workflow conventions. Designed to be pasted into or piped to an agent prompt so it knows how to use the KB without being told
+
 ## Future (Post-v1)
 
+- [ ] `kb upgrade` / `kb doctor --fix` migrations for existing KBs (add git, new tables, config fields)
+- [ ] `kb index --watch` — file watcher for auto-indexing
+- [ ] Agent guide on `kb --help`
 - [ ] Vector embeddings for semantic search
 - [ ] Multiple KB support (`--kb` flag)
 - [ ] MCP server mode
 - [ ] `kb import` from other formats
 - [ ] Auto-archive old notes
 - [ ] MOC auto-generation from tag clusters
-- [ ] Complex query language (`type:task AND project:jump`)
+- [ ] Complex query language (`type:task AND project:alpha`)
