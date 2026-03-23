@@ -65,8 +65,8 @@ describe("kb prime", () => {
 		const output = logs.join("\n");
 
 		expect(output).toContain("## Workflow");
-		expect(output).toContain("Search for context");
-		expect(output).toContain("wikilinks");
+		expect(output).toContain("kb ready");
+		expect(output).toContain("## Tags");
 	});
 
 	it("shows ready tasks in global view", () => {

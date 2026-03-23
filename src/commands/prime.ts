@@ -283,34 +283,74 @@ export function primeCommand(options: PrimeOptions = {}): void {
 
 	// Commands
 	lines.push("## Commands");
+	lines.push("");
+	lines.push("### Creating notes");
+	lines.push("```");
+	lines.push('kb add session "Title" --project X --area Y --content "..."');
+	lines.push('kb add task "Title" --project X --area Y --id TICKET-1 --source linear --url "..."');
+	lines.push('kb add project "Title" --content "..."');
+	lines.push('kb add decision "Title" --project X --content "..."');
+	lines.push('kb add area "Title" --content "..."');
+	lines.push('kb add MOC "Title" --content "..."');
 	lines.push("```");
 	lines.push(
-		'kb add <type> <title> [--project X] [--area X] [--content "..."] [--id X] [--source X]',
+		"All `kb add` options: --project, --area, --status, --id, --name, --source, --url, --content, --dry-run, --stdin",
 	);
-	lines.push("kb show <id|path>                  # read full note");
-	lines.push("kb search <query> [--type X] [--project X] [--output json]");
+	lines.push("");
+	lines.push("### Reading & searching");
+	lines.push("```");
+	lines.push(
+		"kb show <id|path>                   # read a note (fuzzy match: PAY-1, fix-login, etc.)",
+	);
+	lines.push("kb search <query> [--type X] [--project X] [--output json] [--limit N]");
 	lines.push("kb ls [--type X] [--project X] [--status X] [--recent]");
-	lines.push("kb update <id|path> --status done  # update frontmatter");
-	lines.push('kb append <id|path> --content "..." # add to existing note');
-	lines.push("kb tags [tag]                      # browse by tag");
-	lines.push("kb history [file]                  # change log");
-	lines.push("kb today                           # daily rollup");
-	lines.push("kb ready [--project X]             # tasks with no blockers");
-	lines.push("kb blocked [--project X]           # blocked tasks + what's blocking");
+	lines.push("kb tags [tag]                       # list tags or notes by tag");
+	lines.push("```");
+	lines.push("");
+	lines.push("### Updating");
+	lines.push("```");
+	lines.push("kb update <id|path> --status done   # change frontmatter fields");
+	lines.push('kb append <id|path> --content "..."  # add to an existing note');
+	lines.push("```");
+	lines.push("");
+	lines.push("### Dependencies & workflow");
+	lines.push("```");
+	lines.push("kb ready [--project X]              # what can be worked on now");
+	lines.push("kb blocked [--project X]            # what's stuck and why");
+	lines.push("kb today                            # daily rollup by project");
+	lines.push("kb history [file] [--source dir]    # change log");
 	lines.push("```");
 	lines.push("");
 
 	// Workflow
 	lines.push("## Workflow");
-	lines.push('1. Search for context first: `kb search "..." --output json`');
-	lines.push("2. Read relevant notes: `kb show <id>`");
+	lines.push("1. `kb ready` — check what's actionable");
+	lines.push('2. `kb search "..." --output json` — find existing context');
+	lines.push("3. `kb show <id>` — read relevant notes");
+	lines.push('4. `kb add session "..." --project X --area Y --content "..."` — log work');
+	lines.push('5. `kb add decision "..." --project X --content "..."` — record decisions');
+	lines.push("6. `kb update <id> --status done` — mark work complete");
+	lines.push('7. `kb append <id> --content "..."` — add updates to existing notes');
+	lines.push("");
+	lines.push("## Dependencies");
+	lines.push("Add `depends_on` in frontmatter to track what must be done first:");
+	lines.push("```yaml");
+	lines.push("depends_on:");
+	lines.push("  - task-PAY-1-setup.md");
+	lines.push("  - decision-2026-03-23-use-stripe.md");
+	lines.push("```");
+	lines.push("- `kb ready` shows notes where all deps are done");
+	lines.push("- `kb blocked` shows what's stuck and why");
+	lines.push("- Works across types (tasks can depend on decisions, etc.)");
+	lines.push("");
+	lines.push("## Tags");
+	lines.push("Use #tags in note content to categorize. Keep tags:");
+	lines.push("- **By project**: #kb-cli, #payments-api");
+	lines.push("- **By feature/topic**: #auth, #search, #onboarding");
+	lines.push("- **By milestone**: #v1-release, #sprint-3");
 	lines.push(
-		'3. Log work as sessions: `kb add session "..." --project X --area Y --content "..."`',
+		"Do NOT tag with tech stack (#typescript), buzzwords (#architecture), or generic terms.",
 	);
-	lines.push('4. Record decisions: `kb add decision "..." --project X --content "..."`');
-	lines.push('5. Track tasks: `kb add task "..." --project X --id TICKET --source linear`');
-	lines.push('6. Update: `kb append <id> --content "..."` or `kb update <id> --status done`');
-	lines.push("7. Use [[wikilinks]] and #tags to connect notes");
 
 	console.log(lines.join("\n"));
 }
